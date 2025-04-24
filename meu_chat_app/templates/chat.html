@@ -1,0 +1,59 @@
+<button id="chat-button">💬</button>
+
+<div id="chat-box">
+    <div id="chat-header">Suporte</div>
+    <div id="chat-messages">
+        <p><em>Como posso te ajudar?</em></p>
+    </div>
+    <div id="chat-input">
+        <input type="text" id="chat-text" placeholder="Digite sua mensagem...">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+</div>
+
+<script>
+const chatBtn = document.getElementById('chat-button');
+const chatBox = document.getElementById('chat-box');
+chatBtn.addEventListener('click', () => {
+    if (chatBox.style.display === "none") {
+        chatBox.style.display = "block";
+    } else {
+        chatBox.style.display = "none";
+    }
+});
+
+async function sendMessage() {
+    const input = document.getElementById("chat-text");
+    const msg = input.value;
+    if (msg.trim() !== "") {
+        const chat = document.getElementById("chat-messages");
+        
+        const userMsg = document.createElement("p");
+        userMsg.textContent = "Você: " + msg;
+        chat.appendChild(userMsg);
+        input.value = "";
+        chat.scrollTop = chat.scrollHeight;
+
+        console.log("Enviando mensagem para o backend:", msg);
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: msg })
+            });
+            console.info("Resposta do servidor:", response);
+
+            const data = await response.json();
+            const botMsg = document.createElement("p");
+            botMsg.textContent = "Assistente: " + data.response;
+            chat.appendChild(botMsg);
+            chat.scrollTop = chat.scrollHeight;
+        } catch (error) {
+            console.error("Erro ao se comunicar com o backend:", error);
+        }
+    }
+}
+</script>
