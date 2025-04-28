@@ -1,6 +1,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import json
+import ia
+
+modelo = "llama3:8b"  # ou outro modelo disponível
+
+ia_service = ia.service(modelo=modelo)
 
 # Configurações da página
 st.set_page_config(page_title="Página com Suporte", layout="wide")
@@ -39,22 +44,13 @@ class Message(BaseModel):
 
 @app.post("/chat")
 def chat_endpoint(msg: Message):
-    ollama_url = "http://localhost:11434/api/generate"
-    payload = {
-        "model": "llama3:8b",  # ou outro modelo disponível
-        "prompt": msg.message
-    }
-    response = requests.post(ollama_url, json=payload)
-    
-    lines = response.text.strip().splitlines()
 
-    # 2. Converte cada linha em um dicionário
-    json_objects = [json.loads(line) for line in lines]
-
-    # 3. Junta os valores de "response"
-    resposta_completa = ''.join(obj['response'] for obj in json_objects)
+    # Chama o serviço de IA com a mensagem recebida
+    output = ia_service.agent_executor.invoke({
+        'input': msg.message
+    })
     # result = response.json()
-    return {"response": resposta_completa}
+    return {"response": output.get('output')}
 
 # Para rodar o backend separado:
 # uvicorn.run(app, host="0.0.0.0", port=8000)
